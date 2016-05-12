@@ -1,0 +1,13 @@
+- name: Configure webserver
+  hosts: webserver
+  tasks:
+    - name: Get the username
+      command: whoami
+      register: username
+
+    - name: Run letsencrypt
+      command: /home/{{username.stdout}}/letsencrypt/letsencrypt-auto run --apache --webroot-path /var/www/owncloud_letsencrypt
+      args:
+        chdir: /home/{{username.stdout}}/letsencrypt
+      become: yes
+      become_user: root

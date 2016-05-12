@@ -1,0 +1,75 @@
+---
+- name: Install owncloud and dependencies
+  apt: name={{item}} state=present
+  with_items:
+    - owncloud
+    - mariadb-server
+    - mariadb-client
+    - python-mysqldb
+  become: yes
+  become_user: root
+
+- name: Start Mysql Service
+  service: name=mysql state=started enabled=yes
+  become: yes
+  become_user: root
+
+# - name: Change root password
+#   mysql_user:
+#       name: root 
+#       host: localhost
+#       password: "{{ db_root_password }}"
+
+- name: Remember root password
+  template: src=.my.cnf.j2 dest=~/.my.cnf mode=0600
+
+- name: Create Application Database
+  mysql_db: name={{db_name}} state=present
+  
+- name: Create Application DB User
+  mysql_user: name={{db_user}} password={{db_password}} priv={{db_name}}.*:ALL host=localhost state=present
+
+- name: Deploy apache configuration for owncloud
+  template: src=owncloud.conf.j2 dest=/etc/apache2/sites-available/owncloud.conf mode=0600
+  become: yes
+  become_user: root
+
+- name: Disable defualt owncloud configuration
+  command: a2disconf owncloud
+  become: yes
+  become_user: root
+
+- name: Enable ssl module
+  command: a2enmod ssl
+  become: yes
+  become_user: root
+
+- name: Enable custom owncloud site
+  command: a2ensite owncloud
+  become: yes
+  become_user: root
+
+- name: Restart apache2
+  service: name=apache2 state=restarted
+  become: yes
+  become_user: root
+
+- name: Install letsencrypt
+  git: repo=https://github.com/letsencrypt/letsencrypt dest=~/letsencrypt
+
+- name: Get the username
+  local_action: command whoami
+  register: username
+
+- name: Run letsencrypt
+  command: /home/{{username.stdout}}/letsencrypt/letsencrypt-auto run --apache --webroot-path /var/www/owncloud_letsencrypt --domain {{owncloud_url}}
+  args:
+    chdir: /home/{{username.stdout}}/letsencrypt
+  become: yes
+  become_user: root
+
+ # - name: Generate certificates
+ #   shell: "letsencrypt certonly --agree-tos --email {{ letsencrypt_email }} --domains {{ zone }},www.{{ zone }}"
+
+ # - name: Generate dhparams file
+ #   shell: openssl dhparam -out /etc/ssl/certs/dhparam.pem 4096
