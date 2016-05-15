@@ -8,6 +8,7 @@
   hosts: webserver
   roles:
     - owncloud
+    - jekyll
 
 - name: Configure workstation
   hosts: workstations
