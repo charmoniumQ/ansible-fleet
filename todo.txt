@@ -1,0 +1,4 @@
+https://doc.owncloud.org/server/8.2/admin_manual/installation/installation_wizard.html#setting-strong-directory-permissions
+https://wiki.archlinux.org/index.php/Apache_HTTP_Server
+https://doc.owncloud.org/server/8.2/admin_manual/installation/source_installation.html#prerequisites
+http://docs.ansible.com/ansible/intro_inventory.html

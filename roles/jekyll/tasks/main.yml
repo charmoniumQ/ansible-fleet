@@ -1,0 +1,54 @@
+---
+# TODO: install to /var/www/jekyll
+- name: Install apache
+  apt: name={{item}} state=present
+  with_items:
+    - apache2
+  become: yes
+  become_user: root
+
+- name: Deploy apache configuration for static site
+  template: src=jekyll.conf.j2 dest=/etc/apache2/sites-available/jekyll.conf mode=0600
+  become: yes
+  become_user: root
+
+- name: Enable jekyll configuration
+  file: src=/etc/apache2/sites-available/jekyll.conf dest=/etc/apache2/sites-enabled/jekyll.conf state=link
+  become: yes
+  become_user: root
+
+- name: Disable default configuratoin
+  file: path=/etc/apache2/sites-enabled/000-default.conf follow=no state=absent
+  become: yes
+  become_user: root
+
+- name: Enable ssl module
+  apache2_module: name=ssl state=present
+  become: yes
+  become_user: root
+
+- name: Restart apache2
+  service: name=apache2 state=restarted
+  become: yes
+  become_user: root
+
+- name: Install letsencrypt
+  git: repo=https://github.com/letsencrypt/letsencrypt dest=~/letsencrypt
+
+- name: Get the username
+  command: whoami
+  register: username
+
+- name: Get letsencrypt certificate
+  command: /home/{{username.stdout}}/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{email}} --domain {{jekyll_url}}
+  args: chdir=/home/{{username.stdout}}/letsencrypt creates=/etc/letsencrypt/live/{{jekyll_url}}/cert.pem
+  register: test1
+  become: yes
+  become_user: root
+
+- name: Install letsencrypt certificate
+  command: /home/{{username.stdout}}/letsencrypt/certbot-auto install --apache --non-interactive --domain {{jekyll_url}} --cert-path /etc/letsencrypt/live/{{jekyll_url}}/cert.pem --key-path /etc/letsencrypt/live/{{jekyll_url}}/privkey.pem --fullchain-path /etc/letsencrypt/live/{{jekyll_url}}/fullchain.pem --chain-path /etc/letsencrypt/live/{{jekyll_url}}/chain.pem --redirect --hsts --domain {{jekyll_url}}
+  args: chdir=/home/{{username.stdout}}/letsencrypt
+  register: test2
+  become: yes
+  become_user: root

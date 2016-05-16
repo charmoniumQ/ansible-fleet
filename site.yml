@@ -14,3 +14,7 @@
   hosts: workstations
   roles:
     - workstation
+
+# TODO: maintanence
+# - change the mysql passwords
+# - change letsencrypt certs
