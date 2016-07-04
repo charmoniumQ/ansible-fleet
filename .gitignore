@@ -1,3 +1,2 @@
-*,retry
+*.retry
 test.yml
-credentials/*

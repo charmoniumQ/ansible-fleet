@@ -1,8 +1,9 @@
 <VirtualHost *:443>
-        ServerName {{jekyll_url}}
-        ServerAdmin {{email}}
+        ServerName {{my_domain}}
+        ServerAdmin {{my_email}}
 
         DocumentRoot /var/www/html
+
 
         SSLCertificateFile /etc/ssl/certs/ssl-cert-snakeoil.pem
         SSLCertificateKeyFile /etc/ssl/private/ssl-cert-snakeoil.key
@@ -19,4 +20,3 @@
 </VirtualHost>
 
 # vim: syntax=apache ts=4 sw=4 sts=4 sr noet
-

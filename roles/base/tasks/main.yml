@@ -1,29 +1,16 @@
 ---
-- name: Update cache
+- name: Update package cache
   apt: update_cache=yes
   become: yes
   become_user: root
 
-- name: Install networking packages
+- name: Install base packages
   apt: name={{item}} state=present
   with_items:
-    - openssh-client # openssh (void)
-    - dnsutils
-    - wget
     - curl
-    - netcat
     - python-pip
-    - python-dev
     - git
-  become: yes
-  become_user: root
-
-- name: Install utilities
-  apt: name={{item}} state=present
-  with_items:
-    - sudo # TODO: replace with doas
     - nano
-    - tmux
   become: yes
   become_user: root
 

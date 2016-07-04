@@ -1,0 +1,39 @@
+---
+# Variables: 
+# my_domain
+# my_email
+
+- name: Install apache
+  apt: name={{item}} state=present
+  with_items:
+    - apache2
+  become: yes
+  become_user: root
+
+- name: Deploy apache configuration for static site
+  template: src=static.conf.j2 dest=/etc/apache2/sites-available/static.conf mode=0644
+  become: yes
+  become_user: root
+
+- name: Enable static configuration
+  file: src=/etc/apache2/sites-available/static.conf dest=/etc/apache2/sites-enabled/static.conf state=link
+  become: yes
+  become_user: root
+
+- name: Disable default configuration
+  file: path=/etc/apache2/sites-enabled/000-default.conf follow=no state=absent
+  become: yes
+  become_user: root
+
+- name: Enable ssl module
+  apache2_module: name=ssl state=present
+  become: yes
+  become_user: root
+
+- name: Restart apache2
+  service: name=apache2 state=restarted
+  become: yes
+  become_user: root
+
+- name: Install certificate
+  include: ../../letsencrypt/tasks/main.yml
