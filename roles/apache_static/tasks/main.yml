@@ -1,7 +1,7 @@
 ---
 # Variables: 
-# my_domain
-# my_email
+# static_domain
+# admin_email
 
 - name: Install apache
   apt: name={{item}} state=present
@@ -25,15 +25,6 @@
   become: yes
   become_user: root
 
-- name: Enable ssl module
-  apache2_module: name=ssl state=present
-  become: yes
-  become_user: root
-
-- name: Restart apache2
-  service: name=apache2 state=restarted
-  become: yes
-  become_user: root
-
-- name: Install certificate
-  include: ../../letsencrypt/tasks/main.yml
+- name: Install letsencrypt certificate
+  include: ../../letsencrypt/tasks/main.yml secure_domain={{static_domain}}
+  # note that the letsencrypt certbot restarts apache

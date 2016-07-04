@@ -1,0 +1,38 @@
+---
+- name: Install sql server and client
+  apt: name={{item}} state=present
+  with_items:
+    - python-mysqldb
+    - mariadb-server
+    - mariadb-client
+  become: yes
+  become_user: root
+
+- name: Start mysql service
+  service: name=mysql state=started enabled=yes
+  become: yes
+  become_user: root
+
+# - name: Change root password
+# TODO: write a script where the user puts in their default credentials and the script automatically changes them
+
+- name: Create Application Database
+  mysql_db:
+    name: "{{db_name}}"
+    state: present
+    login_user: root 
+    login_password: "{{ lookup('password', 'credentials/mysql_root_password') }}"
+  
+- name: Create Application DB User
+  mysql_user:
+    name: "{{db_name}}_user"
+    password: "{{ lookup('password', 'credentials/mysql_' + db_name + '_password') }}"
+    priv: "{{db_name}}.*:ALL"
+    host: localhost
+    state: present
+    login_user: root 
+    login_password: "{{ lookup('password', 'credentials/mysql_root_password') }}"
+
+- name: Print credentials
+  debug:
+    msg: "database: \"{{db_name}}\", username: \"{{db_name}}_user\", password: \"{{ lookup('password', 'credentials/mysql_' + db_name + '_password') }}\""

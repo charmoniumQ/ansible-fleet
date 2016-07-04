@@ -1,6 +1,6 @@
 ---
 # Variables:
-# my_email
+# admin_email
 # domain
 - name: Install letsencrypt
   git: repo=https://github.com/letsencrypt/letsencrypt dest=~/letsencrypt
@@ -8,15 +8,15 @@
   become_user: root
 
 - name: Get letsencrypt certificate
-  command: ~/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{my_email}} --domain {{my_domain}} --agree-tos
+  command: ~/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{admin_email}} --domain {{secure_domain}} --agree-tos
   args:
     chdir: ~/letsencrypt
-    creates: /etc/letsencrypt/live/{{my_domain}}/cert.pem
+    creates: /etc/letsencrypt/live/{{secure_domain}}/cert.pem
   become: yes
   become_user: root
 
 - name: Install letsencrypt certificate
-  command: ~/letsencrypt/certbot-auto install --apache --non-interactive --domain {{my_domain}} --cert-path /etc/letsencrypt/live/{{my_domain}}/cert.pem --key-path /etc/letsencrypt/live/{{my_domain}}/privkey.pem --fullchain-path /etc/letsencrypt/live/{{my_domain}}/fullchain.pem --chain-path /etc/letsencrypt/live/{{my_domain}}/chain.pem --redirect --hsts --domain {{my_domain}}
+  command: ~/letsencrypt/certbot-auto install --apache --non-interactive --domain {{secure_domain}} --cert-path /etc/letsencrypt/live/{{secure_domain}}/cert.pem --key-path /etc/letsencrypt/live/{{secure_domain}}/privkey.pem --fullchain-path /etc/letsencrypt/live/{{secure_domain}}/fullchain.pem --chain-path /etc/letsencrypt/live/{{secure_domain}}/chain.pem --redirect --hsts --domain {{secure_domain}}
   args:
     chdir: ~/letsencrypt
   become: yes

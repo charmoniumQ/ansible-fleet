@@ -1,52 +1,34 @@
 ---
-# - name: Install apache and PHP
-#   apt: name={{item}} state=present
-#   with_items:
-#     - apache2
-#     - php5-curl
-#     - php5-gd
-#     - php5-cli
-#     - php5-geoip
-#     - mariadb-server
-#     - mariadb-client
-#     - python-mysqldb
-#     - unzip
-#   become: yes
-#   become_user: root
+# Variables:
+# piwik_domain
+# admin_email
 
-# - name: Start Mysql Service
-#   service: name=mysql state=started enabled=yes
-#   become: yes
-#   become_user: root
-
-# - name: Change root password
-#   mysql_user:
-#     name: root 
-#     host: localhost
-#     password: "{{ lookup('password', 'credentials/mysql_root_password') }}"
-
-# - name: Remember root password
-#   template: src=.my.cnf.j2 dest=~/.my.cnf mode=0600
-
-# - name: Create Application Database
-#   mysql_db: name={{db_name}} state=present
-  
-# - name: Create Application DB User
-#   mysql_user:
-#     name: "{{db_user}}"
-#     password: "{{ lookup('password', 'credentials/mysql_piwik_password') }}"
-#     priv: "{{db_name}}.*:ALL"
-#     host: localhost
-#     state: present
-
-- name: Fetch piwik
-  unarchive:
-    src: http://builds.piwik.org/piwik.zip
-    dest: /var/www/
-    copy: no
-    # piwik.zip contains piwik/ which gets extracted to /var/www/piwik
+- name: Install apache and PHP
+  apt: name={{item}} state=present
+  with_items:
+    - apache2
+    - php5-curl
+    - php5-gd
+    - php5-cli
+    - php5-geoip
+    - mariadb-server
+    - mariadb-client
+    - python-mysqldb
+    - unzip
   become: yes
   become_user: root
+
+# TODO:
+# I am affected by [this bug](https://github.com/ansible/ansible/issues/11348)
+# so the file must be extracted manually, not through ansible
+# - name: Fetch piwik
+#   unarchive:
+#     src: http://builds.piwik.org/piwik.zip
+#     dest: /var/www/
+#     copy: no
+#     # piwik.zip contains piwik/ which gets extracted to /var/www/piwik
+#   become: yes
+#   become_user: root
 
 - name: Remove extra files
   file:
@@ -65,10 +47,11 @@
   become: yes
   become_user: root
 
-- name: Install PHP ini for piwik
-  template: src=30-piwik.ini.j2 dest=/etc/php5/cli/conf.d/30-piwik.ini
-  become: yes
-  become_user: root
+# TODO: I am affected by the following bug
+# https://forum.piwik.org/t/always-populate-raw-post-data-1-and-yes-id-did-it/16664/7
+
+- name: Set up database
+  include: ../../mysql/tasks/main.yml db_name=piwik
 
 - name: Install configuration for piwik
   template: src=piwik.conf.j2 dest=/etc/apache2/sites-available/piwik.conf mode=0600
@@ -80,33 +63,6 @@
   become: yes
   become_user: root
 
-- name: Enable ssl module
-  apache2_module: name=ssl state=present
-  become: yes
-  become_user: root
-
-- name: Restart apache2
-  service: name=apache2 state=restarted
-  become: yes
-  become_user: root
-
-- name: Install letsencrypt
-  git: repo=https://github.com/letsencrypt/letsencrypt dest=~/letsencrypt
-
-- name: Get the username
-  command: whoami
-  register: username
-
-- name: Get letsencrypt certificate
-  command: /home/{{username.stdout}}/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{email}} --domain {{piwik_url}}
-  args: chdir=/home/{{username.stdout}}/letsencrypt creates=/etc/letsencrypt/live/{{piwik_url}}/cert.pem
-  register: test1
-  become: yes
-  become_user: root
-
 - name: Install letsencrypt certificate
-  command: /home/{{username.stdout}}/letsencrypt/certbot-auto install --apache --non-interactive --domain {{piwik_url}} --cert-path /etc/letsencrypt/live/{{piwik_url}}/cert.pem --key-path /etc/letsencrypt/live/{{piwik_url}}/privkey.pem --fullchain-path /etc/letsencrypt/live/{{piwik_url}}/fullchain.pem --chain-path /etc/letsencrypt/live/{{piwik_url}}/chain.pem --redirect --hsts --domain {{piwik_url}}
-  args: chdir=/home/{{username.stdout}}/letsencrypt
-  register: test2
-  become: yes
-  become_user: root
+  include: ../../letsencrypt/tasks/main.yml secure_domain={{piwik_domain}}
+  # note that the letsencrypt certbot restarts apache
