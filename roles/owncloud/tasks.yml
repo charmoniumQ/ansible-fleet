@@ -43,16 +43,16 @@
 - name: Enable rewrite
   apache2_module: state=present name=rewrite
 
-- name: Enable headers
+- name: Enable rewrite
   apache2_module: state=present name=headers
 
-- name: Enable env
+- name: Enable rewrite
   apache2_module: state=present name=env
 
-- name: Enable dir
+- name: Enable rewrite
   apache2_module: state=present name=dir
 
-- name: Enable mime
+- name: Enable rewrite
   apache2_module: state=present name=mime
 
 - name: Change permissions on owncloud
@@ -68,7 +68,29 @@
 
 - name: Setup database
   include: ../mysql/tasks/main.yml db_name=owncloud
+  
+- name: Restart apache2
+  service: name=apache2 state=restarted
+  become: yes
+  become_user: root
 
-- name: Install letsencrypt certificate
-  include: ../../letsencrypt/tasks/main.yml secure_domain={{owncloud_domain}}
-  # note that the letsencrypt certbot restarts apache
+# - name: Install letsencrypt
+#   git: repo=https://github.com/letsencrypt/letsencrypt dest=~/letsencrypt
+
+# - name: Get the username
+#   command: whoami
+#   register: username
+
+# - name: Get letsencrypt certificate
+#   command: /home/{{username.stdout}}/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{email}} --domain {{owncloud_url}}
+#   args: chdir=/home/{{username.stdout}}/letsencrypt creates=/etc/letsencrypt/live/{{owncloud_url}}/cert.pem
+#   register: test1
+#   become: yes
+#   become_user: root
+
+# - name: Install letsencrypt certificate
+#   command: /home/{{username.stdout}}/letsencrypt/certbot-auto install --apache --non-interactive --domain {{owncloud_url}} --cert-path /etc/letsencrypt/live/{{owncloud_url}}/cert.pem --key-path /etc/letsencrypt/live/{{owncloud_url}}/privkey.pem --fullchain-path /etc/letsencrypt/live/{{owncloud_url}}/fullchain.pem --chain-path /etc/letsencrypt/live/{{owncloud_url}}/chain.pem --redirect --hsts --domain {{owncloud_url}}
+#   args: chdir=/home/{{username.stdout}}/letsencrypt
+#   register: test2
+#   become: yes
+#   become_user: root

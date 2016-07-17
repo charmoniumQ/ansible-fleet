@@ -1,7 +1,0 @@
----
-db_user: owncloud_user
-db_name: owncloud_db
-db_password: D76Z4gnkoYFBW0a3rUwD
-db_root_password: qcHveVTTObqM3qybJBQ8
-owncloud_url: owncloud.samgrayson.me
-email: root@localhost
