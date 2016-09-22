@@ -1,20 +1,27 @@
 ---
-- name: base
-  hosts: all
-  roles:
-    - base
-
-- name: Configure webserver
-  hosts: webserver
+- hosts: webserver
+  vars:
+    static_domain: samgrayson.me
+    admin_email: sam@samgrayson.me
+    piwik_domain: piwik.samgrayson.me
+    owncloud_domain: owncloud.samgrayson.me
   roles:
     - owncloud
-    - jekyll
+    - apache_static
+    - piwik
 
-- name: Configure workstation
-  hosts: workstations
-  roles:
-    - workstation
+# TODO: workstation role
 
 # TODO: maintanence
 # - change the mysql passwords
 # - change letsencrypt certs
+
+# TODO: subscribe to owncloud and debian mailing list
+
+# https://angularclass.com/how-to-use-ansible/
+# http://docs.ansible.com/ansible/playbooks_variables.html
+# http://docs.ansible.com/ansible/playbooks_best_practices.html
+# https://doc.owncloud.org/server/9.0/admin_manual/configuration_server/index.html
+
+# Running everything everytime
+# Tame taken

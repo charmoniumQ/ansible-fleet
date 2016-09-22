@@ -35,4 +35,4 @@
 
 - name: Print credentials
   debug:
-    msg: "database: \"{{db_name}}\", username: \"{{db_name}}_user\", password: \"{{ lookup('password', 'credentials/mysql_' + db_name + '_password') }}\""
+    msg: "database: {{db_name}}, username: {{db_name}}_user, password: {{ lookup('password', 'credentials/mysql_' + db_name + '_password') }}"

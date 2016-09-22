@@ -11,7 +11,7 @@
   command: ~/letsencrypt/certbot-auto certonly --apache --non-interactive --email {{admin_email}} --domain {{secure_domain}} --agree-tos
   args:
     chdir: ~/letsencrypt
-    creates: /etc/letsencrypt/live/{{secure_domain}}/cert.pem
+    # creates: /etc/letsencrypt/live/{{secure_domain}}/cert.pem
   become: yes
   become_user: root
 
