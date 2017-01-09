@@ -1,0 +1,33 @@
+---
+# debops bootstrap --limit host --user admin --become
+# debops bootstrap --limit host --user root --ask-pass
+# https://docs.debops.org/en/latest/ansible/roles/ansible-bootstrap/docs/getting-started.html
+
+- name: Install mandatory packages
+  hosts: webserver
+  gather_facts: no
+  strategy: debug
+  roles:
+    - role: debops.bootstrap/raw
+
+- name: Bootstrap for ansible
+  hosts: webserver
+  strategy: debug
+  roles:
+    - role: debops.bootstrap
+      # bootstrap__packages: ['dbus']
+
+      # Hostname management
+      bootstrap__hostname_domain_config_enabled: yes
+      bootstrap__domain: samgrayson.me
+      bootstrap__hostname: main
+
+      # User management
+      bootstrap__admin: yes
+      bootstrap__admin_system: no
+      bootstrap__admin_default_users:
+        - name: sam
+      bootstrap__admin_sshkeys:
+        - "{{ lookup('file', '~/.ssh/ec2_personal20160510.pub') }}"
+      bootstrap__sudo: yes
+      bootstrap__sudo_group: sudo

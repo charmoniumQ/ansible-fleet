@@ -1,0 +1,45 @@
+---
+dependencies:
+  - role: debops.nginx
+    nginx__default_servers: [] # disable welcome server
+    nginx__internal_servers: ['{{ nginx_server_acme }}'] # disable localhost server
+    nginx_acme: yes
+    nginx_acme_server: yes
+    nginx_acme_domain: samgrayson.me
+
+# certbot certonly --webroot -w /srv/samgrayson.me -d www.samgrayson.me -d samgrayson.me -d "*.samgrayson.me"
+  - role: debops.pki
+    # pki_default_realms: []
+    pki_acme_install: yes
+    pki_acme_default_subdomains: [] # disables pre-existing default
+    pki_realms:
+      - name: 'samgrayson.me'
+        acme: yes
+        acme_domains: []
+        acme_subdomains: ['*', 'cloud']
+        acme_ca: 'le-staging'
+
+  - role: debops.nginx
+    nginx__default_servers: [] # disable welcome server
+    nginx__internal_servers: ['{{ nginx_server_acme }}'] # disable localhost server
+    nginx_acme: yes
+    nginx_acme_server: yes
+    nginx_servers:
+      - name: samgrayson.me
+        listen: ['0.0.0.0:80']
+        listen_ssl: ['0.0.0.0:443']
+
+        # content and location
+        root: '/srv/samgrayson.me/'
+        try_files: [$uri]
+        index: index.html
+        error_pages:
+            '404': 404.html
+            # # TODO: add more HTTP error pages
+
+        # SSL
+        acme: yes # for reverification
+        ssl: yes
+        ocsp: no
+        hsts_enabled: yes
+        hsts_preload: yes

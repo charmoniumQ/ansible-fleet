@@ -1,0 +1,6 @@
+---
+- name: Webserver configuration
+  hosts: webserver
+  strategy: debug
+  roles:
+    - webserver-role
